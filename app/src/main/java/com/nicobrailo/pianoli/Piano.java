@@ -10,7 +10,9 @@ import com.nicobrailo.pianoli.melodies.MultipleSongsMelodyPlayer;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Locale;
+import java.util.Set;
 
 /**
  * Backing model / state of our virtual piano keyboard.
@@ -32,6 +34,9 @@ class Piano {
     /** Preferred width (device independent pixels) of a key, but see also {@link #MIN_NUMBER_OF_KEYS} */
     public static final int KEY_PREFERRED_WIDTH = 220;
 
+    /** All possible flat keys we can possibly support; not necessarily visible in all screen sizes. */
+    static final Set<Integer> ALL_FLAT_KEYS = Set.of(1, 3, 7, 9, 11, 15, 17, 21, 23, 25);
+
 
     private final int keys_width;
     private final int keys_flat_width;
@@ -41,6 +46,14 @@ class Piano {
 
     /** state tracker: which keys are <em>currently</em> pressed */
     private final boolean[] key_pressed;
+
+    /**
+     * Which flat keys are actually visible in the current Piano geometry.
+     *
+     * @see #ALL_FLAT_KEYS
+     */
+    private final Set<Integer> available_flat_keys;
+
     /** handle to our android-provided sound mixer, that mixes multiple simultaneous tones */
     private static SoundPool KeySound = null;
     /** Resource handles to the mp3 samples of our currently active soundset, one for each note */
@@ -77,6 +90,15 @@ class Piano {
 
         key_pressed = new boolean[keys_count];
         Arrays.fill(key_pressed, false);
+
+        // actually visible flats
+        // Very verbose init, but the nice stream/filter/toSet shorthands are at higher API-level.
+        available_flat_keys = new HashSet<>();
+        for (int flatKey : ALL_FLAT_KEYS) {
+            if (flatKey < keys_count) { // NON-inclusive "<"; don't include flats which may be occluded by screen edge
+                available_flat_keys.add(flatKey);
+            }
+        }
     }
 
     Piano init(final Context context, final String soundset) {
@@ -100,6 +122,10 @@ class Piano {
 
     int get_keys_count() {
         return keys_count;
+    }
+
+    public Set<Integer> getAvailableFlatKeys() {
+        return new HashSet<>(available_flat_keys); // defensive copy; caller could modify the Collection.
     }
 
     void resetState() {

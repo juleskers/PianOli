@@ -68,7 +68,7 @@ class PianoCanvas extends SurfaceView implements SurfaceHolder.Callback {
         this.piano = new Piano(screen_size_x, screen_size_y)
                 .init(context, soundset);
         this.bevelWidth = this.piano.get_keys_width() * BEVEL_RATIO;
-        this.appConfigHandler = new AppConfigTrigger(ctx);
+        this.appConfigHandler = new AppConfigTrigger(ctx, piano);
 
         Log.d("PianOli::DrawingCanvas", "Display is " + screen_size.x + "x" + screen_size.y +
                 ", there are " + piano.get_keys_count() + " keys");
@@ -108,7 +108,7 @@ class PianoCanvas extends SurfaceView implements SurfaceHolder.Callback {
             }
         }
 
-        appConfigHandler.onPianoRedrawFinish(this, canvas);
+        appConfigHandler.drawConfigIcons(this, canvas);
     }
 
     void draw_key(final Canvas canvas, final Key rect, final Paint p) {

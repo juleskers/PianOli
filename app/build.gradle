@@ -5,12 +5,17 @@ android {
     compileSdk 33
     defaultConfig {
         applicationId "com.nicobrailo.pianoli"
+
+        // Very low minimum API, to ensure app runs on *ancient* phones.
+        // Google Play store may require a higher level, but this ensures our APK works if installed via other channels
+        // (F-droid, manual APK transfer, etc.)
         minSdkVersion 21
 
         // We deliberately target the oldest API that Google Play allows, to allow running PianOli on ancient
         // "drawer phones", which are more likely to be given to babies.
         //noinspection OldTargetApi
         targetSdkVersion 33
+
         versionCode 22
         versionName "1.22"
     }

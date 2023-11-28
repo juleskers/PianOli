@@ -8,7 +8,6 @@ import android.util.Log;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
@@ -17,21 +16,27 @@ class AppConfigTrigger {
     private static final float CONFIG_ICON_SIZE_TO_FLAT_KEY_RATIO = 0.5f;
     private static final float CONFIG_ICON_SIZE_TO_FLAT_KEY_RATIO_PRESSED = 0.4f;
     private static final int CONFIG_TRIGGER_COUNT = 2;
-    private static final Set<Integer> BLACK_KEYS = new HashSet<>(Arrays.asList(1, 3, 7, 9, 11, 15));
     private final AppCompatActivity activity;
     private final Set<Integer> pressedConfigKeys = new HashSet<>();
     private Integer nextKeyPress;
     private AppConfigCallback cb = null;
     private boolean tooltip_shown = false;
     private final Drawable icon;
+    /** Handle to the piano who is triggering us */
+    private final Piano piano;
+    private Random random;
 
-    AppConfigTrigger(AppCompatActivity activity) {
-        nextKeyPress = getNextExpectedKey();
+    AppConfigTrigger(AppCompatActivity activity, Piano piano) {
         this.activity = activity;
+        this.piano = piano;
+
         this.icon = ContextCompat.getDrawable(activity, R.drawable.ic_settings);
         if (this.icon == null) {
             Log.wtf("PianOliError", "Config icon doesn't exist");
         }
+
+        random = new Random();
+        nextKeyPress = getNextExpectedKey();
     }
 
     void setConfigRequestCallback(AppConfigCallback cb) {
@@ -39,9 +44,9 @@ class AppConfigTrigger {
     }
 
     private Integer getNextExpectedKey() {
-        Set<Integer> nextKeyOptions = new HashSet<>(BLACK_KEYS);
+        Set<Integer> nextKeyOptions = piano.getAvailableFlatKeys();
         nextKeyOptions.removeAll(pressedConfigKeys);
-        int next_key_i = (new Random()).nextInt(nextKeyOptions.size());
+        int next_key_i = random.nextInt(nextKeyOptions.size());
 
         for (Integer nextKey : nextKeyOptions) {
             next_key_i = next_key_i - 1;
@@ -97,14 +102,14 @@ class AppConfigTrigger {
         reset();
     }
 
-    void onPianoRedrawFinish(PianoCanvas piano, Canvas canvas) {
-        int pressedSize = (int) (piano.piano.get_keys_flat_width() * CONFIG_ICON_SIZE_TO_FLAT_KEY_RATIO_PRESSED);
+    void drawConfigIcons(final PianoCanvas pianoCanvas, final Canvas canvas) {
+        int pressedSize = (int) (pianoCanvas.piano.get_keys_flat_width() * CONFIG_ICON_SIZE_TO_FLAT_KEY_RATIO_PRESSED);
         for (Integer cfgKey : pressedConfigKeys) {
-            piano.draw_icon_on_black_key(canvas, icon, cfgKey, pressedSize, pressedSize);
+            pianoCanvas.draw_icon_on_black_key(canvas, icon, cfgKey, pressedSize, pressedSize);
         }
 
-        int normalSize = (int) (piano.piano.get_keys_flat_width() * CONFIG_ICON_SIZE_TO_FLAT_KEY_RATIO);
-        piano.draw_icon_on_black_key(canvas, icon, nextKeyPress, normalSize, normalSize);
+        int normalSize = (int) (pianoCanvas.piano.get_keys_flat_width() * CONFIG_ICON_SIZE_TO_FLAT_KEY_RATIO);
+        pianoCanvas.draw_icon_on_black_key(canvas, icon, nextKeyPress, normalSize, normalSize);
     }
 
     public interface AppConfigCallback {
