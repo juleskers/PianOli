@@ -393,12 +393,16 @@ class PianoCanvas extends SurfaceView implements SurfaceHolder.Callback, PianoLi
 
 
     @Override
-    public void surfaceChanged(@NonNull SurfaceHolder surfaceHolder, int i, int i1, int i2) {
-        Log.i("PianOli::PianoCanvas", "surfaceChanged: ignoring!");
+    public void surfaceChanged(@NonNull SurfaceHolder surfaceHolder, int format, int newWidth, int newHeight) {
+        Log.i("PianOli::DrawingCanvas", "surfaceChanged: new dimensions: " +
+                "w="+newWidth +
+                " h="+newHeight);
+        redraw(surfaceHolder);
     }
 
     @Override
     public void surfaceDestroyed(@NonNull SurfaceHolder surfaceHolder) {
         Log.i("PianOli::PianoCanvas", "surfaceDestroyed: ignoring!");
+        // no cleanup needed. we only use very simple drawing primitives, so there's nothing (graphical) to release.
     }
 }
